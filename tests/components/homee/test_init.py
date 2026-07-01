@@ -104,9 +104,15 @@ async def test_software_version(
     device_registry: dr.DeviceRegistry,
 ) -> None:
     """Test sw_version for device with only AttributeType.SOFTWARE_VERSION."""
-    mock_homee.nodes = [build_mock_node("cover_without_position.json")]
+    mock_homee.nodes = [
+        build_mock_node("cover_with_slats_position.json"),
+        build_mock_node("cover_without_position.json"),
+    ]
+    mock_homee.get_node_by_id = lambda node_id: mock_homee.nodes[node_id - 1]
     await setup_integration(hass, mock_config_entry)
 
+    device = device_registry.async_get_device(identifiers={(DOMAIN, f"{HOMEE_ID}-1")})
+    assert device.sw_version == "V2 (2.4.3)"
     device = device_registry.async_get_device(identifiers={(DOMAIN, f"{HOMEE_ID}-2")})
     assert device.sw_version == "1.45"
 

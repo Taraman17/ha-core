@@ -156,6 +156,12 @@ class HomeeNodeEntity(Entity):
             )
         ) is not None:
             return str(attribute.get_value())
+        if (
+            attribute := self._node.get_attribute_by_type(
+                AttributeType.SOFTWARE_VERSION
+            )
+        ) is not None:
+            return str(attribute.get_value())
 
         return None
 
