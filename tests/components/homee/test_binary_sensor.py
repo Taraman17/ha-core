@@ -6,11 +6,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 from syrupy.assertion import SnapshotAssertion
 
+from homeassistant.components.homee.const import DOMAIN
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import device_registry as dr, entity_registry as er
 
 from . import build_mock_node, setup_integration
+from .conftest import HOMEE_ID
 
 from tests.common import MockConfigEntry, snapshot_platform
 
@@ -41,6 +43,7 @@ async def test_add_device(
     hass: HomeAssistant,
     mock_homee: MagicMock,
     mock_config_entry: MockConfigEntry,
+    device_registry: dr.DeviceRegistry,
     entity_registry: er.EntityRegistry,
     snapshot: SnapshotAssertion,
 ) -> None:
@@ -53,7 +56,16 @@ async def test_add_device(
     added_node = build_mock_node("add_device.json")
     mock_homee.nodes.append(added_node)
     mock_homee.get_node_by_id.return_value = mock_homee.nodes[1]
-    await mock_homee.add_nodes_listener.call_args_list[1][0][0](added_node, True)
+
+    for call in mock_homee.add_nodes_listener.call_args_list:
+        await call[0][0](added_node, False)
+    await hass.async_block_till_done()
+
+    device = device_registry.async_get_device(identifiers={(DOMAIN, f"{HOMEE_ID}-3")})
+    assert device is None
+
+    for call in mock_homee.add_nodes_listener.call_args_list:
+        await call[0][0](added_node, True)
     await hass.async_block_till_done()
 
     await snapshot_platform(hass, entity_registry, snapshot, mock_config_entry.entry_id)

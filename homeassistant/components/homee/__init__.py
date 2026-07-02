@@ -3,6 +3,7 @@
 import logging
 
 from pyHomee import Homee, HomeeAuthFailedException, HomeeConnectionFailedException
+from pyHomee.const import AttributeType, NodeProfile
 from pyHomee.model import HomeeNode
 
 from homeassistant.config_entries import ConfigEntry
@@ -12,6 +13,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
 from .const import DOMAIN
+from .helpers import get_name_for_enum
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -79,7 +81,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HomeeConfigEntry) -> boo
 
     homee.add_connection_listener(_connection_update_callback)
 
-    # create device register entry
+    # Create device registry entry for homee hub.
     device_registry = dr.async_get(hass)
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
@@ -90,6 +92,46 @@ async def async_setup_entry(hass: HomeAssistant, entry: HomeeConfigEntry) -> boo
         model="homee",
         sw_version=homee.settings.version,
     )
+
+    # Create entries for nodes.
+    def _get_software_version(node: HomeeNode) -> str | None:
+        """Return the software version of the node."""
+        if (
+            attribute := node.get_attribute_by_type(AttributeType.FIRMWARE_REVISION)
+        ) is not None:
+            return str(attribute.get_value())
+        if (
+            attribute := node.get_attribute_by_type(AttributeType.SOFTWARE_REVISION)
+        ) is not None:
+            return str(attribute.get_value())
+        if (
+            attribute := node.get_attribute_by_type(AttributeType.SOFTWARE_VERSION)
+        ) is not None:
+            return str(attribute.get_value())
+
+        return None
+
+    async def _get_or_create_device(node: HomeeNode) -> None:
+        """Create a device registry entry for a node."""
+        device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            identifiers={(DOMAIN, f"{homee.settings.uid}-{node.id}")},
+            model=get_name_for_enum(NodeProfile, node.profile),
+            name=node.name,
+            sw_version=_get_software_version(node),
+            via_device=(DOMAIN, homee.settings.uid),
+        )
+
+    for node in homee.nodes:
+        await _get_or_create_device(node)
+
+    async def _add_node_callback(node: HomeeNode, add: bool) -> None:
+        """Call when a node is added at runtime."""
+        if not add:
+            return
+        await _get_or_create_device(node)
+
+    homee.add_nodes_listener(_add_node_callback)
 
     # Remove devices that are no longer present in homee.
     devices = dr.async_entries_for_config_entry(device_registry, entry.entry_id)

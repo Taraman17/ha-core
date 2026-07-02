@@ -2,7 +2,7 @@
 
 from typing import override
 
-from pyHomee.const import AttributeState, AttributeType, NodeProfile, NodeState
+from pyHomee.const import AttributeState, NodeState
 from pyHomee.model import HomeeAttribute, HomeeNode
 from websockets.exceptions import ConnectionClosed
 
@@ -12,7 +12,6 @@ from homeassistant.helpers.entity import Entity
 
 from . import HomeeConfigEntry
 from .const import DOMAIN
-from .helpers import get_name_for_enum
 
 
 class HomeeEntity(Entity):
@@ -40,9 +39,6 @@ class HomeeEntity(Entity):
                 identifiers={
                     (DOMAIN, f"{entry.runtime_data.settings.uid}-{attribute.node_id}")
                 },
-                name=node.name,
-                model=get_name_for_enum(NodeProfile, node.profile),
-                via_device=(DOMAIN, entry.runtime_data.settings.uid),
             )
         if attribute.name:
             self._attr_name = attribute.name
@@ -111,10 +107,6 @@ class HomeeNodeEntity(Entity):
         else:
             self._attr_device_info = DeviceInfo(
                 identifiers={(DOMAIN, f"{entry.unique_id}-{node.id}")},
-                name=node.name,
-                model=get_name_for_enum(NodeProfile, node.profile),
-                sw_version=self._get_software_version(),
-                via_device=(DOMAIN, entry.runtime_data.settings.uid),
             )
 
         self._host_connected = entry.runtime_data.connected
@@ -141,29 +133,6 @@ class HomeeNodeEntity(Entity):
         # the platform will overwrite this method.
         homee = self._entry.runtime_data
         await homee.update_node(self._node.id)
-
-    def _get_software_version(self) -> str | None:
-        """Return the software version of the node."""
-        if (
-            attribute := self._node.get_attribute_by_type(
-                AttributeType.FIRMWARE_REVISION
-            )
-        ) is not None:
-            return str(attribute.get_value())
-        if (
-            attribute := self._node.get_attribute_by_type(
-                AttributeType.SOFTWARE_REVISION
-            )
-        ) is not None:
-            return str(attribute.get_value())
-        if (
-            attribute := self._node.get_attribute_by_type(
-                AttributeType.SOFTWARE_VERSION
-            )
-        ) is not None:
-            return str(attribute.get_value())
-
-        return None
 
     async def async_set_homee_value(
         self, attribute: HomeeAttribute, value: float

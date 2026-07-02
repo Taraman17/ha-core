@@ -3,13 +3,14 @@
 from collections.abc import Callable, Coroutine
 from enum import IntEnum
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyHomee.model import HomeeNode
 
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from . import HomeeConfigEntry
+if TYPE_CHECKING:
+    from . import HomeeConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
