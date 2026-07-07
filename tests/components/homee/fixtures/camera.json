@@ -1,0 +1,52 @@
+{
+  "id": 467,
+  "name": "Test%20Kamera",
+  "profile": 3026,
+  "image": "default",
+  "favorite": 0,
+  "order": 112,
+  "protocol": 9,
+  "routing": 0,
+  "state": 1,
+  "state_changed": 1782691713,
+  "added": 1681936133,
+  "history": 1,
+  "cube_type": 8,
+  "note": "",
+  "services": 7,
+  "phonetic_name": "",
+  "owner": 1,
+  "security": 0,
+  "attributes": [
+    {
+      "id": 2853,
+      "node_id": 467,
+      "instance": 0,
+      "minimum": 0,
+      "maximum": 1,
+      "current_value": 1.0,
+      "target_value": 1.0,
+      "last_value": 0.0,
+      "unit": "n%2Fa",
+      "step_value": 1.0,
+      "editable": 1,
+      "type": 179,
+      "state": 1,
+      "last_changed": 1777673451,
+      "changed_by": 1,
+      "changed_by_id": 0,
+      "based_on": 1,
+      "data": "{\"baseUrlOnline\":\"https%3A%2F%2Fprodvpn-eu-6.netatmo.net%2Frestricted%2F10.255.10.10%2F35617bc9e57d9c4e3gdf1ea3f54889a9%2FMTc4Mjc3NDAwMDowpxFfVt3ZF2QWDS6AXBct9iQOGA%2C%2C\",\"baseUrlLocal\":\"http%3A%2F%2F192.168.1.1%2F35370bc9f57d9c1e3edf1ea3f66889a9\",\"commands\":{\"image\":\"/live/snapshot_720.jpg\",\"ping\":\"/command/ping\",\"video\":\"/live/index.m3u8\"}}",
+      "name": "",
+      "options": {
+        "automations": ["toggle"],
+        "history": {
+          "day": 35,
+          "week": 5,
+          "month": 1,
+          "stepped": true
+        }
+      }
+    }
+  ]
+}
