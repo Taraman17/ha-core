@@ -29,6 +29,7 @@ def build_mock_node(file: str) -> AsyncMock:
             att = AsyncMock(spec=HomeeAttribute)
             for key, value in attribute.items():
                 setattr(att, key, value)
+            att.name = attribute.get("name", "")
             att.is_reversed = False
             att.get_value = lambda att=att: (
                 att.data if att.unit == "text" else att.current_value
